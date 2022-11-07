@@ -6,20 +6,16 @@
     (display stack))
 
   (start-information)
-
-
-
-  (define ie (interaction-environment))
-
+  
+  #t
+  
   (define (ERROR word)
     (begin
       (display "FATAL ERROR: UNKNOWN COMMAND: ")
       (write word)))
-
-  (define (processing a b c d e) "it's prototype")
   
-  ;; ---------------COMMANDS---------------------  
-  (define (displaying stack)
+  ;; ----------------------STACK COMMANDS---------------------  
+  (define (displaying stack) ;; UNDEFINED ЕСЛИ УБРАТЬ СТРОКУ #T и (start-information)
     (newline) (display stack) stack)
   
   (define (plus stack)
@@ -75,7 +71,7 @@
 
   (define (depth stack)
     (cons (length stack) stack))
-
+  ;; -----------------------------------CONTROL COMMANDS---------------------
   (define (defining words-vector word-index data-stack return-stack glossary)
     (let loop ((n (+ word-index 2)))
       (if (equal? (vector-ref words-vector n) 'end)
@@ -92,11 +88,11 @@
     (if (= (car data-stack) 0)
         (let loop ((n (+ word-index 1)))
           (if (equal? (vector-ref words-vector n) 'endif)
-              (list words-vector (+ n 1) data-stack return-stack glossary)
+              (list words-vector (+ n 1) (cdr data-stack) return-stack glossary)
               (loop (+ n 1))))
-        (list words-vector (+ word-index 1) data-stack return-stack glossary)))
+        (list words-vector (+ word-index 1) (cdr data-stack) return-stack glossary)))
 
-  (define (end-of-if stack) 1)
+  (define (end-of-if stack) stack)
   
   ;; ---------------COMMANDS---------------------  
   
@@ -121,14 +117,16 @@
           (cons 'rot rot)
           (cons 'depth depth)
           
+          (cons 'endif end-of-if) ; Не является управляющей командой! просто ключевое слово
+          ;; ----------------------------
           (cons 'define defining) ;; Вынесены снизу в отдельный список
           (cons 'end end)
           (cons 'exit exit)
           (cons 'if start-of-if)
-          (cons 'endif end-of-if)
+          
           ))
   
-  (define control-structures (cdddr (cddddr (cddddr (cddddr (cddddr start-glossary))))))
+  (define control-structures (cddddr (cddddr (cddddr (cddddr (cddddr start-glossary))))))
   
   (let ((program-length (vector-length program)))
     (define (processing words-vector word-index data-stack return-stack glossary)
@@ -137,9 +135,11 @@
           (let* ((word (vector-ref words-vector word-index))
                  (command-pair (assoc word glossary)) ;; Тыкаемся в словарь и получаем #f или пару вида '(+ . plus)
                  (command (if command-pair (cdr command-pair) #f))) ;; Команда вида <plus> или число типа <14>
+            ;(display (list command words-vector word-index data-stack return-stack glossary))
+            ;(read-char)
             (if command ;; Команда лежит в словаре? (если нет - либо константа, либо ошибка)
                 (if (number? command) ;; Команда - число?
-                    (processing words-vector command data-stack (cons word-index return-stack) glossary) ;; Переход по адресу определенной в программе процедуры
+                    (processing words-vector command data-stack (cons (+ word-index 1) return-stack) glossary) ;; Переход по адресу определенной в программе процедуры
                     (if (assoc word control-structures) ;; Добро пожаловать, криво сделанные управляющие команды
                         (let* ((response (command words-vector word-index data-stack return-stack glossary)) ;; Вызов команды не на стеке, а на всей информации сразу
                                (words-vector (car response)) ;; Распаковка полученного ответа от управляющей команды
@@ -164,7 +164,6 @@
     
 
     (processing program 0 stack '() start-glossary))) ;; Вызов processing для первого слова
-
 
 
 
