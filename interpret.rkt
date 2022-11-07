@@ -5,7 +5,7 @@
     (display " stack: ")
     (display stack))
 
-  (start-information)
+  ;(start-information)
   
   #t
   
@@ -34,7 +34,7 @@
     (cons (remainder (cadr stack) (car stack)) (cddr stack)))
 
   (define (negative stack)
-    (cons (- (car stack)) (cddr stack)))
+    (cons (- (car stack)) (cdr stack)))
 
   (define (equaling? stack)
     (cons (if (= (cadr stack) (car stack)) -1 0) (cddr stack)))
@@ -64,7 +64,7 @@
     (cons (car stack) stack))
 
   (define (over stack)
-    (cons (caddr stack) stack))
+    (cons (cadr stack) stack))
 
   (define (rot stack)
     (cons (caddr stack) (cons (cadr stack) (cons (car stack) (cdddr stack)))))
@@ -135,7 +135,7 @@
           (let* ((word (vector-ref words-vector word-index))
                  (command-pair (assoc word glossary)) ;; Тыкаемся в словарь и получаем #f или пару вида '(+ . plus)
                  (command (if command-pair (cdr command-pair) #f))) ;; Команда вида <plus> или число типа <14>
-            ;(display (list command words-vector word-index data-stack return-stack glossary))
+            ;(display (list command words-vector word-index data-stack return-stack))
             ;(read-char)
             (if command ;; Команда лежит в словаре? (если нет - либо константа, либо ошибка)
                 (if (number? command) ;; Команда - число?
@@ -164,6 +164,7 @@
     
 
     (processing program 0 stack '() start-glossary))) ;; Вызов processing для первого слова
+
 
 
 
