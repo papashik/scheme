@@ -6,13 +6,14 @@
 <Цифра> ::= 1|2|3|4|5|6|7|8|9|0
 |#
 
-
-
 (define (check-frac str)
   (define (numb? symb)
     (let loop ((arr (string->list "0123456789")))
       (and (not (null? arr))
            (or (eq? (car arr) symb) (loop (cdr arr))))))
+
+  (define (not-null-numb? symb)
+    (not (eq? symb #\0)))
   
   (define (scan-first-num arr)
     (and arr
@@ -29,10 +30,13 @@
     (and arr
          (not (null? arr))
          (numb? (car arr))
-         (let loop ((arr (cdr arr)))
+         (let loop ((arr arr) (at-least-one-not-null #f))
            (cond
-             ((null? arr) #t)
-             ((numb? (car arr)) (loop (cdr arr)))
+             ((null? arr) at-least-one-not-null)
+             ((numb? (car arr))
+              (if (not-null-numb? (car arr))
+                  (loop (cdr arr) #t)
+                  (loop (cdr arr) at-least-one-not-null)))
              (else #f)))))
   
   (let ((arr (string->list str)))
