@@ -38,7 +38,7 @@
   (let ((arr (string->list str)))
     (scan-second-num
      (scan-first-num 
-      (if (or (eq? (car arr) #\-) (eq? (car arr) #\+))
+      (if (and (not (null? arr)) (or (eq? (car arr) #\-) (eq? (car arr) #\+)))
           (cdr arr)
           arr)))))
 
